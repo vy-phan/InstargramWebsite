@@ -1,8 +1,29 @@
-import React from 'react'
+import React, { useState } from 'react'
 import SlideBar from '../components/SlideBar'
 import { FaSearch } from 'react-icons/fa'
+import Friend from '../components/Friend'
+import { useGetUser } from '../hooks/useGetUser'
 
 const Searching = () => {
+  const { users, isLoading, error } = useGetUser();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center min-h-screen">
+      <span className="loading loading-spinner loading-lg"></span>
+    </div>
+  }
+
+  if (error) {
+    return <div className="flex justify-center items-center min-h-screen">
+      <p className="text-red-500 text-center">{error}</p>
+    </div>
+  }
+
+  const filteredUsers = users.filter(user =>
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <div className="container mx-auto">
@@ -21,6 +42,8 @@ const Searching = () => {
                   type="text"
                   placeholder="Tìm kiếm bạn bè..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <FaSearch className="absolute right-3 top-3 text-gray-400" />
               </div>
@@ -28,23 +51,9 @@ const Searching = () => {
 
             {/* Friends list */}
             <div className="max-w-2xl mx-auto">
-              {/* Friend item */}
-              <div className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="https://lh3.googleusercontent.com/03WLPin15fkpkLMayBhp4E1YyOJRtcwOL8r2albpcYfmva2vqNbr4RM8q8zk5pGhu9PHdWHk60d2haTOPdgghaUxpDFO4ROPSg=w1600-rj"
-                    alt="Profile"
-                    className="w-12 h-12 rounded-full"
-                  />
-                  <div>
-                    <h3 className="font-semibold">Tên người dùng</h3>
-                    <p className="text-sm text-gray-500">Tên hiển thị</p>
-                  </div>
-                </div>
-                <button className="px-4 py-2 text-sm font-semibold text-blue-500 hover:text-blue-600">
-                  Xem thêm
-                </button>
-              </div>
+                {filteredUsers.map((user, index) => (
+                    <Friend key={index} user={user} />
+                ))}
             </div>
           </div>
         </div>

@@ -82,10 +82,20 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Incorrect password." });
         }
 
-        // Tạo token (nếu cần)
+        // Trả về tất cả thông tin người dùng (trừ password)
+        const userResponse = {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            profilePicture: user.profilePicture,
+            bio: user.bio,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        };
+
         res.status(200).json({ 
             message: "Login successful!", 
-            user: { id: user._id, username: user.username, email: user.email } 
+            user: userResponse
         });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
@@ -97,6 +107,69 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
     try {
         res.status(200).json({ message: "Logout successful!" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
+// Lấy thông tin người dùng theo ID
+export const getUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// Lấy danh sách tất cả người dùng
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find(); 
+        res.status(200).json({ success: true, data: users }); 
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: "Lỗi Server" });
+    }
+};
+
+// Cập nhật thông tin người dùng
+export const updateUser = async (req, res) => {
+    try {
+        const { username, email, password, profilePicture, bio } = req.body;
+        const userId = req.params.id;
+
+        // Validate email if provided
+        if (email && !validateEmail(email)) {
+            return res.status(400).json({ message: "Invalid email format." });
+        }
+
+        // Hash password if provided
+        let updateData = { username, email, profilePicture, bio };
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            updateData.password = await bcrypt.hash(password, salt);
+        }
+
+        // Update user with new data
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true }
+        )
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            message: "User updated successfully",
+            user: updatedUser
+        });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }

@@ -2,38 +2,62 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { AiFillHome } from 'react-icons/ai'
 import { BiSearch } from 'react-icons/bi'
-import { IoMdNotifications } from 'react-icons/io'
-import { IoCreateOutline } from 'react-icons/io5'
-import Avatar1 from '../assets/img/FB_IMG_1708595704236.jpg'
+import { IoCreateOutline, IoLogIn, IoLogOut } from 'react-icons/io5'
+import { useLogout } from '../hooks/useLogout'
+import { useGetUser } from '../hooks/useGetUser'
 
 const SlideBar = () => {
-  return (
-    <div className='flex flex-col gap-8 px-4 py-4'>
-      <Link to="/" className='flex items-center gap-4'>
-        <AiFillHome className='text-2xl'/>
-        <span>Home</span>
-      </Link>
+    const userIns = JSON.parse(localStorage.getItem('userIns'));
+    const { logout, isLoading } = useLogout();
+    const { users } = useGetUser();
+    
 
-      <Link to="/search" className='flex items-center gap-4'>
-        <BiSearch className='text-2xl'/>
-        <span>Search</span>
-      </Link>
+    return (
+        <div className='flex flex-col gap-8 px-4 py-4'>
+            <Link to="/" className='flex items-center gap-4'>
+                <AiFillHome className='text-2xl' />
+                <span>Trang Chủ</span>
+            </Link>
 
-      <Link to="/create" className='flex items-center gap-4'>
-        <IoCreateOutline className='text-2xl'/>
-        <span>Create</span>
-      </Link>
+            <Link to="/search" className='flex items-center gap-4'>
+                <BiSearch className='text-2xl' />
+                <span>Tìm kiếm</span>
+            </Link>
 
-      <Link to="/profile" className='flex items-center gap-4'>
-        <img 
-          src={Avatar1} 
-          alt="profile" 
-          className='w-7 h-7 rounded-full'
-        />
-        <span>Profile</span>
-      </Link>
-    </div>
-  )
+            <Link to="/create-post" className='flex items-center gap-4'>
+                <IoCreateOutline className='text-2xl' />
+                <span>Tạo bài viết</span>
+            </Link>
+
+            {userIns && userIns.id ? (
+                <>
+                    {users.filter(user => user._id === userIns.id).map(user => (
+                        <Link key={user._id} to={`/profile/${user._id}`} className='flex items-center gap-4'>
+                            <img
+                                src={user.profilePicture === "" ? "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-social-media-user-vector-default-avatar-profile-icon-social-media-user-vector-portrait-176194876.jpg" : user.profilePicture}
+                                alt="profile"
+                                className='w-7 h-7 rounded-full'
+                            />
+                            <span>{user.username}</span>
+                            <button 
+                                onClick={logout}
+                                disabled={isLoading}
+                                className='text-blue-500 hover:text-blue-700 cursor-pointer'
+                            >
+                                {isLoading ? 'Đang đăng xuất...' : <IoLogOut className='text-2xl text-blue-600' />}
+                            </button>
+                        </Link>
+                    ))}
+                </>
+            ) : (
+                <Link to="/login" className='flex items-center gap-4'>
+                    <IoLogIn className='text-2xl' />
+                    <span>Đăng nhập</span>
+                </Link>
+            )}
+
+        </div>
+    )
 }
 
 export default SlideBar

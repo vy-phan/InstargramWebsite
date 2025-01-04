@@ -4,12 +4,15 @@ import mongoose from "mongoose";
 // Tạo bài post mới
 export const createPost = async (req, res) => {
     try {
-        const { userId, image, caption } = req.body;
-
-        // Kiểm tra dữ liệu đầu vào
-        if (!userId || !image) {
-            return res.status(400).json({ message: "User ID and image are required." });
+        const { userId, caption } = req.body;
+        
+        // Kiểm tra có file ảnh không
+        if (!req.processedImage) {
+            return res.status(400).json({ message: "Image is required." });
         }
+
+        // Tạo đường dẫn ảnh với file webp đã xử lý
+        const image = `${req.protocol}://${req.get('host')}/uploads/${req.processedImage.filename}`;
 
         // Tạo bài post mới
         const newPost = new Post({

@@ -4,6 +4,8 @@ import { connectDB } from './config/db.js'
 import userRouter from './router/user.router.js'
 import postRouter from './router/post.router.js'
 import commentRouter from './router/comment.router.js'
+import path from 'path'
+import { fileURLToPath } from 'url';
 
 dotenv.config()
 
@@ -16,6 +18,12 @@ app.use(express.json())
 app.use('/api/user',userRouter)
 app.use('/api/post',postRouter)
 app.use('/api/comment',commentRouter)
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.listen(PORT , () => {
     connectDB()
