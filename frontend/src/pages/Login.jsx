@@ -14,18 +14,36 @@ const Login = () => {
     setError('');
     
     try {
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Invalid email format');
+        return;
+      }
+
+      // Validate password length
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
+
       const response = await axios.post('/api/user/login', {
-        email,
-        password,
+        email: email.trim(), // Trim whitespace
+        password: password.trim() // Trim whitespace
       });
 
       if (response.data) {
-        // Lưu toàn bộ dữ liệu response vào localStorage
         localStorage.setItem('userIns', JSON.stringify(response.data.user));
         navigate('/');
       }
     } catch (error) {
-      setError(error.response?.data?.message || 'Đã có lỗi xảy ra khi đăng nhập');
+      if (error.response?.status === 404) {
+        setError('User not found. Please check your email.');
+      } else if (error.response?.status === 400) {
+        setError('Incorrect password. Please try again.');
+      } else {
+        setError('An error occurred during login. Please try again.');
+      }
     }
   };
 
@@ -38,6 +56,7 @@ const Login = () => {
             {error}
           </div>
         )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-group">
             <label className="block text-sm font-medium text-white">Email:</label>
@@ -46,9 +65,12 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              placeholder="Enter your email"
               className="w-full px-3 py-2 mt-1 border border-white bg-transparent text-white rounded-md focus:outline-none focus:ring focus:ring-white placeholder-white::placeholder"
             />
           </div>
+
+
           <div className="form-group">
             <label className="block text-sm font-medium text-white">Password:</label>
             <input
@@ -56,9 +78,12 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              placeholder="Enter your password"
+              minLength={6}
               className="w-full px-3 py-2 mt-1 border border-white bg-transparent text-white rounded-md focus:outline-none focus:ring focus:ring-white placeholder-white::placeholder"
             />
           </div>
+          
           <button
             type="submit"
             className="w-full px-4 py-2 font-medium text-white bg-gradient-to-r from-indigo-500/50 to-purple-600/50 rounded-md hover:from-purple-600/70 hover:to-indigo-500/70"

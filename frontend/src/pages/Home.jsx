@@ -35,11 +35,13 @@ const Home = () => {
           <div className="col-span-8 bg-white min-h-[500px] p-4 flex items-center justify-center">
             <div className="grid grid-cols-1 gap-4 w-full max-w-3xl">
               <div className="flex flex-wrap justify-center items-center gap-4">
-                {posts.map((post) => (
-                  <div key={post._id} className="flex justify-center items-center w-full max-w-sm mb-8">
-                    <Card post={post} />
-                  </div>
-                ))}
+                {posts
+                  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                  .map((post) => (
+                    <div key={post._id} className="flex justify-center items-center w-full max-w-sm mb-8">
+                      <Card post={post} />
+                    </div>
+                  ))}
               </div>
             </div>
           </div>

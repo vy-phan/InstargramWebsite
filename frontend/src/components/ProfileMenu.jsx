@@ -1,7 +1,5 @@
 import React from 'react'
-import Avatar1 from '../assets/img/FB_IMG_1708595704236.jpg'
 import { Link } from 'react-router-dom'
-import { useLogout } from '../hooks/useLogout';
 import { useGetUser } from '../hooks/useGetUser';
 
 const ProfileMenu = () => {

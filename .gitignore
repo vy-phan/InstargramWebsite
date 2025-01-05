@@ -1,0 +1,3 @@
+# ... other ignores ...
+backend/uploads/*
+!backend/uploads/.gitkeep 

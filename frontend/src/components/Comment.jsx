@@ -8,11 +8,17 @@ const Comment = ({ postId }) => {
   const { comments, isLoading, error } = useGetComment(postId);
   const { users } = useGetUser();
   const { addComment } = useAddComment(); 
+  const userIns = JSON.parse(localStorage.getItem('userIns'));
 
   const [commentText, setCommentText] = React.useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!userIns) {
+      alert("Vui lòng đăng nhập để thực hiện chức năng này!");
+      return;
+    }
+
     if (!commentText.trim()) return;
 
     try {
@@ -60,14 +66,16 @@ const Comment = ({ postId }) => {
         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={() => document.getElementById(`comment_modal_${postId}`).close()}>✕</button>
         <input
           type="text"
-          placeholder="Nhập bình luận..."
+          placeholder={userIns ? "Nhập bình luận..." : "Vui lòng đăng nhập để bình luận"}
           className="input input-bordered w-full"
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}
+          disabled={!userIns}
         />
         <button 
           type="submit" 
-          className="btn btn-primary"
+          className={`btn btn-primary ${!userIns ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={!userIns}
         >
           Gửi
         </button>

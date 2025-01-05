@@ -3,14 +3,20 @@ import { useGetUser } from '../hooks/useGetUser'
 import { formatDate } from '../utils/dataFomat'
 import useUpdatePost from '../hooks/useUpdatePost';
 import Comment from './Comment';
+import { Link } from 'react-router-dom';
 
 const Card = ({ post }) => {
     const { users, isLoading, error } = useGetUser();
     const userIns = JSON.parse(localStorage.getItem('userIns'));
-    const [isLiked, setIsLiked] = React.useState(post.likes.includes(userIns.id));
+    const [isLiked, setIsLiked] = React.useState(userIns ? post.likes.includes(userIns.id) : false);
     const { updatePost } = useUpdatePost()
 
     const handleLike = async () => {
+        if (!userIns) {
+            alert("Vui lòng đăng nhập để thực hiện chức năng này!");
+            return;
+        }
+
         try {
             let updatedLikes;
             if (isLiked) {
@@ -43,15 +49,17 @@ const Card = ({ post }) => {
     return (
         <div className="card w-96 bg-base-100 shadow-xl">
             <figure>
-                <img
-                    src={post.image || <div className="skeleton h-32 w-32"></div>} 
-                    alt="Post image"
-                    className="w-full h-auto object-cover"
+                {/* <Link to={`/profile/${post.userId}`}> */}
+                    <img
+                        src={post.image || <div className="skeleton h-32 w-32"></div>} 
+                        alt="Post image"
+                        className="w-full h-auto object-cover"
                     onError={(e) => {
                         e.target.onerror = null; 
                         e.target.src = 'https://media.vov.vn/sites/default/files/styles/large/public/2023-09/4_47.jpg'; // Fallback image
                     }}
                 />
+                {/* </Link> */}
             </figure>
 
             <div className="card-body p-4">
@@ -59,14 +67,16 @@ const Card = ({ post }) => {
                     <div className="flex items-center gap-2">
                         <div className="avatar">
                             <div className="w-8 h-8 rounded-full">
-                                <img 
-                                    src={users.find(user => user._id === post.userId)?.profilePicture || 'https://via.placeholder.com/32'} 
-                                    alt="user avatar"
+                                <Link to={`/profile/${post.userId}`}>
+                                    <img 
+                                        src={users.find(user => user._id === post.userId)?.profilePicture || 'https://thumbs.dreamstime.com/b/default-avatar-profile-icon-social-media-user-vector-default-avatar-profile-icon-social-media-user-vector-portrait-176194876.jpg'} 
+                                        alt="user avatar"
                                     onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.src = 'https://via.placeholder.com/32';
                                     }}
                                 />
+                                </Link>
                             </div>
                         </div>
                         <span className="font-bold">{users.find(user => user._id === post.userId)?.username || 'Unknown User'}</span>
@@ -80,7 +90,7 @@ const Card = ({ post }) => {
 
                 <div className="card-actions justify-start mt-4">
                     <button
-                        className="btn btn-ghost btn-circle"
+                        className={`btn btn-ghost btn-circle ${!userIns ? 'cursor-not-allowed opacity-50' : ''}`}
                         onClick={handleLike}
                     >
                         <svg

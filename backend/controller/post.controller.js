@@ -6,7 +6,18 @@ export const createPost = async (req, res) => {
     try {
         const { userId, caption } = req.body;
         
-        // Kiểm tra có file ảnh không
+        // Log để debug
+        console.log('Request body:', req.body);
+        console.log('Processed image:', req.processedImage);
+        
+        if (!userId) {
+            return res.status(400).json({ message: "userId is required." });
+        }
+
+        if (!caption) {
+            return res.status(400).json({ message: "Caption is required." });
+        }
+
         if (!req.processedImage) {
             return res.status(400).json({ message: "Image is required." });
         }
@@ -24,7 +35,12 @@ export const createPost = async (req, res) => {
         await newPost.save();
         res.status(201).json({ message: "Post created successfully!", data: newPost });
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
+        console.error('Create post error:', error);
+        res.status(500).json({ 
+            message: "Server error", 
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 

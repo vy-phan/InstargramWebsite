@@ -126,7 +126,10 @@ const Profile = () => {
                                             </div>
                                         ) : (
 
-                                            posts.filter(post => post.userId === id).map((post) => (
+                                            posts
+                                              .filter(post => post.userId === id)
+                                              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                                              .map((post) => (
                                                 <Link to={`/profile-post/${id}`}>
                                                     <img
                                                         key={post._id}

@@ -42,7 +42,8 @@ export const signup = async (req, res) => {
         }
 
         // Mã hóa mật khẩu
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         // Tạo user mới
         const newUser = new User({
@@ -71,15 +72,15 @@ export const login = async (req, res) => {
         }
 
         // Tìm user theo email
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email });
         if (!user) {
-            return res.status(404).json({ message: "User not found." });
+            return res.status(404).json({ message: "Email không tồn tại." });
         }
 
         // Kiểm tra mật khẩu
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (!isPasswordCorrect) {
-            return res.status(400).json({ message: "Incorrect password." });
+            return res.status(400).json({ message: "Mật khẩu không đúng." });
         }
 
         // Trả về tất cả thông tin người dùng (trừ password)
@@ -94,7 +95,7 @@ export const login = async (req, res) => {
         };
 
         res.status(200).json({ 
-            message: "Login successful!", 
+            message: "Đăng nhập thành công!", 
             user: userResponse
         });
     } catch (error) {

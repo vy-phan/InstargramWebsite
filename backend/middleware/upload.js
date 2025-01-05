@@ -2,6 +2,11 @@ import multer from 'multer';
 import path from 'path';
 import sharp from 'sharp';
 import { promises as fs } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Cấu hình storage tạm thời
 const storage = multer.memoryStorage(); // Lưu file trong memory thay vì disk
@@ -34,7 +39,7 @@ export const processImage = async (req, res, next) => {
 
         // Tạo tên file mới
         const filename = `${Date.now()}-${Math.round(Math.random() * 1E9)}.webp`;
-        const filepath = path.join('uploads', filename);
+        const filepath = path.join(__dirname, '..', 'uploads', filename);
 
         // Xử lý và lưu ảnh
         await sharp(req.file.buffer)

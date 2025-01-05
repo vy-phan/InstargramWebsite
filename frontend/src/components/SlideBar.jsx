@@ -10,7 +10,7 @@ const SlideBar = () => {
     const userIns = JSON.parse(localStorage.getItem('userIns'));
     const { logout, isLoading } = useLogout();
     const { users } = useGetUser();
-    
+
 
     return (
         <div className='flex flex-col gap-8 px-4 py-4'>
@@ -32,21 +32,25 @@ const SlideBar = () => {
             {userIns && userIns.id ? (
                 <>
                     {users.filter(user => user._id === userIns.id).map(user => (
-                        <Link key={user._id} to={`/profile/${user._id}`} className='flex items-center gap-4'>
-                            <img
-                                src={user.profilePicture === "" ? "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-social-media-user-vector-default-avatar-profile-icon-social-media-user-vector-portrait-176194876.jpg" : user.profilePicture}
-                                alt="profile"
-                                className='w-7 h-7 rounded-full'
-                            />
-                            <span>{user.username}</span>
-                            <button 
-                                onClick={logout}
-                                disabled={isLoading}
-                                className='text-blue-500 hover:text-blue-700 cursor-pointer'
-                            >
-                                {isLoading ? 'Đang đăng xuất...' : <IoLogOut className='text-2xl text-blue-600' />}
-                            </button>
-                        </Link>
+                        <>
+                            <div className='flex items-center gap-4'>
+                                <Link key={user._id} to={`/profile/${user._id}`} className='flex items-center gap-4'>
+                                    <img
+                                        src={user.profilePicture === "" ? "https://thumbs.dreamstime.com/b/default-avatar-profile-icon-social-media-user-vector-default-avatar-profile-icon-social-media-user-vector-portrait-176194876.jpg" : user.profilePicture}
+                                        alt="profile"
+                                        className='w-7 h-7 rounded-full'
+                                    />
+                                    <span>{user.username}</span>
+                                </Link>
+                                <button
+                                    onClick={logout}
+                                    disabled={isLoading}
+                                    className='text-blue-500 hover:text-blue-700 cursor-pointer'
+                                >
+                                    {isLoading ? 'Đang đăng xuất...' : <IoLogOut className='text-2xl text-blue-600' />}
+                                </button>
+                            </div>
+                        </>
                     ))}
                 </>
             ) : (
