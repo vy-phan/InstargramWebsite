@@ -4,8 +4,9 @@ import { formatDate } from '../utils/dataFomat'
 import useUpdatePost from '../hooks/useUpdatePost';
 import Comment from './Comment';
 import { Link } from 'react-router-dom';
+import { RiDeleteBinLine } from 'react-icons/ri'; // Import delete icon
 
-const Card = ({ post }) => {
+const Card = ({ post, onDelete, isDeleting, isCurrentUserPost }) => {
     const { users, isLoading, error } = useGetUser();
     const userIns = JSON.parse(localStorage.getItem('userIns'));
     const [isLiked, setIsLiked] = React.useState(userIns ? post.likes.includes(userIns.id) : false);
@@ -51,11 +52,11 @@ const Card = ({ post }) => {
             <figure>
                 {/* <Link to={`/profile/${post.userId}`}> */}
                     <img
-                        src={post.image || <div className="skeleton h-32 w-32"></div>} 
+                        src={post.image || <div className="skeleton h-32 w-32"></div>}
                         alt="Post image"
                         className="w-full h-auto object-cover"
                     onError={(e) => {
-                        e.target.onerror = null; 
+                        e.target.onerror = null;
                         e.target.src = 'https://media.vov.vn/sites/default/files/styles/large/public/2023-09/4_47.jpg'; // Fallback image
                     }}
                 />
@@ -68,8 +69,8 @@ const Card = ({ post }) => {
                         <div className="avatar">
                             <div className="w-8 h-8 rounded-full">
                                 <Link to={`/profile/${post.userId}`}>
-                                    <img 
-                                        src={users.find(user => user._id === post.userId)?.profilePicture || 'https://thumbs.dreamstime.com/b/default-avatar-profile-icon-social-media-user-vector-default-avatar-profile-icon-social-media-user-vector-portrait-176194876.jpg'} 
+                                    <img
+                                        src={users.find(user => user._id === post.userId)?.profilePicture || 'https://thumbs.dreamstime.com/b/default-avatar-profile-icon-social-media-user-vector-default-avatar-profile-icon-social-media-user-vector-portrait-176194876.jpg'}
                                         alt="user avatar"
                                     onError={(e) => {
                                         e.target.onerror = null;
@@ -108,15 +109,29 @@ const Card = ({ post }) => {
                             />
                         </svg>
                     </button>
-                    <button 
-                        className="btn btn-ghost btn-circle" 
+                    <button
+                        className="btn btn-ghost btn-circle"
                         onClick={()=>document.getElementById(`comment_modal_${post._id}`).showModal()}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                     </button>
-                    
+                    {/* Conditionally render delete button for current user's post */}
+                    {isCurrentUserPost && (
+                        <button
+                            onClick={onDelete}
+                            className="btn btn-error btn-circle"
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? (
+                                <span className="loading loading-spinner loading-sm"></span>
+                            ) : (
+                                <RiDeleteBinLine />
+                            )}
+                        </button>
+                    )}
+
                     <dialog id={`comment_modal_${post._id}`} className="modal">
                         <div className="modal-box">
                             <h3 className="font-bold text-lg">Comments</h3>

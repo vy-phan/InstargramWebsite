@@ -1,16 +1,20 @@
-import React from 'react'
+import React, { useState } from 'react'
 import ProfileMenu from '../components/ProfileMenu'
 import SlideBar from '../components/SlideBar'
 import { useGetPost } from '../hooks/useGetPost';
-import Card from '../components/Card';
+import Card from '../components/Card'; // Make sure you are importing the updated Card component
 import { useParams } from 'react-router-dom';
 import useUpdatePost from '../hooks/useUpdatePost';
+import useDeletePost from '../hooks/useDeletePost';
 
 const ProfilePost = () => {
     const { id } = useParams();
     const { posts, isLoading, error } = useGetPost();
     const userIns = JSON.parse(localStorage.getItem('userIns'));
     const { updatePost } = useUpdatePost();
+    const  { deletePost } = useDeletePost();
+    const [isDeletingPost, setIsDeletingPost] = useState(false);
+    const [deletingPostId, setDeletingPostId] = useState(null); // To track which post is being deleted
 
     const handleLike = async (post) => {
         try {
@@ -30,6 +34,25 @@ const ProfilePost = () => {
             console.error('Error updating like:', error);
         }
     };
+
+    const handleDeletePost = async (postId) => {
+        setIsDeletingPost(true);
+        setDeletingPostId(postId); // Set the ID of the post being deleted
+        try {
+            await deletePost(postId);
+            // After successful deletion, you might want to refresh the posts or update the state to remove the deleted post.
+            // For simplicity, we'll just reload the page for now, or you can refetch posts using useGetPost again.
+            window.location.reload(); // Simple page reload to refresh posts - or refetch posts
+            alert('Bài viết đã được xóa thành công!');
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            alert('Không thể xóa bài viết: ' + error);
+        } finally {
+            setIsDeletingPost(false);
+            setDeletingPostId(null); // Reset deleting post ID
+        }
+    };
+
 
     if (isLoading) {
         return <div className="flex justify-center items-center min-h-screen">
@@ -59,7 +82,13 @@ const ProfilePost = () => {
                                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                                     .map((post) => (
                                         <div key={post._id} className="flex justify-center items-center w-full max-w-sm mb-8">
-                                            <Card post={post} onLike={() => handleLike(post)} />
+                                            <Card
+                                                post={post}
+                                                onLike={() => handleLike(post)}
+                                                onDelete={() => handleDeletePost(post._id)} // Pass the delete handler
+                                                isDeleting={isDeletingPost && deletingPostId === post._id} // Pass the deleting state
+                                                isCurrentUserPost={userIns?.id === post.userId} // Pass info if it's current user's post
+                                            />
                                         </div>
                                     ))}
                             </div>

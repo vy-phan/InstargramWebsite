@@ -4,6 +4,8 @@ import { Link, useParams } from 'react-router-dom';
 import { useGetUser } from '../hooks/useGetUser';
 import { useGetPost } from '../hooks/useGetPost';
 import useUpdateUser from '../hooks/useUpdateUser.js';
+import useDeletePost from '../hooks/useDeletePost.js';
+import { RiDeleteBinLine } from 'react-icons/ri'; // Import delete icon
 
 const Profile = () => {
     const { id } = useParams();
@@ -13,7 +15,11 @@ const Profile = () => {
     const user = users.find((user) => user._id === id);
     const [idUserCurrent, setIdUserCurrent] = useState(null);
     const { updateUser } = useUpdateUser();
+    const { deletePost } = useDeletePost();
     const [isUpdating, setIsUpdating] = useState(false);
+    const [isDeletingPost, setIsDeletingPost] = useState(false);
+    const [postMenuOpen, setPostMenuOpen] = useState({}); // State to manage dropdown menu for each post
+
 
     const [formUser, setFormUser] = useState({
         username: '',
@@ -56,6 +62,28 @@ const Profile = () => {
         }
         return errors;
     };
+
+
+    const handleDeletePost = async (postId) => {
+        setIsDeletingPost(true);
+        try {
+            await deletePost(postId);
+            alert('Bài viết đã được xóa thành công!');
+            setPostMenuOpen(prevState => ({ ...prevState, [postId]: false })); // Close the menu after delete
+        } catch (error) {
+            alert('Không thể xóa bài viết: ' + error);
+        } finally {
+            setIsDeletingPost(false);
+        }
+    };
+
+    const togglePostMenu = (postId) => {
+        setPostMenuOpen(prevState => ({
+            ...prevState,
+            [postId]: !prevState[postId]
+        }));
+    };
+
 
     if (isLoading || isLoadingPosts) {
         return <div className="flex justify-center items-center min-h-screen">
@@ -130,33 +158,39 @@ const Profile = () => {
                                               .filter(post => post.userId === id)
                                               .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                                               .map((post) => (
-                                                <Link to={`/profile-post/${id}`}>
-                                                    <img
-                                                        key={post._id}
-                                                        src={post.image}
-                                                        alt={post.caption}
-                                                        className="w-full h-[300px] object-cover"
-                                                    />
-                                                </Link>
+                                                <div key={post._id} className="relative">
+                                                    <Link to={`/profile-post/${id}`}>
+                                                        <img
+                                                            src={post.image}
+                                                            alt={post.caption}
+                                                            className="w-full h-[300px] object-cover"
+                                                        />
+                                                    </Link>
+                                                    {userIns?.id === post.userId && (
+                                                        <div className="absolute top-2 right-2">
+                                                            <button
+                                                                className="text-2xl w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+                                                                onClick={() => togglePostMenu(post._id)}
+                                                            >
+                                                                ⋮
+                                                            </button>
+                                                            {postMenuOpen[post._id] && (
+                                                                <div className="absolute right-0 mt-2 w-24 bg-white rounded-md shadow-md z-10">
+                                                                    <button
+                                                                        className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center gap-2"
+                                                                        onClick={() => handleDeletePost(post._id)}
+                                                                        disabled={isDeletingPost}
+                                                                    >
+                                                                        <RiDeleteBinLine /> Delete
+                                                                        {isDeletingPost && <span className="loading loading-spinner loading-sm"></span>}
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             ))
                                         )}
-
-
-                                        {/* <img
-                                            src="https://rollingstoneindia.com/wp-content/uploads/2023/10/Doona-Scene-Suzy-2-Netflix.jpg"
-                                            alt="Post 1"
-                                            className="w-full h-[300px] object-cover"
-                                        />
-                                        <img
-                                            src="https://i.pinimg.com/originals/a4/5f/04/a45f040de71445e5ad1c15cc99b3d9a1.jpg"
-                                            alt="Post 2"
-                                            className="w-full h-[300px] object-cover"
-                                        />
-                                        <img
-                                            src="https://media.viez.vn/prod/2022/2/10/large_6fc254b41e76fd00df453162db703819_1621520415675683565065_848b543dac.jpeg"
-                                            alt="Post 3"
-                                            className="w-full h-[300px] object-cover"
-                                        /> */}
                                     </div>
                                 </>
                             )}
@@ -217,7 +251,9 @@ const Profile = () => {
                                 ></textarea>
                             </div>
                             <div className="flex justify-end">
-                                <button className="btn btn-primary" type="submit" onClick={handleSubmit}>Sửa</button>
+                                <button className="btn btn-primary" type="submit" onClick={handleSubmit} disabled={isUpdating}>
+                                    {isUpdating ? <span className="loading loading-spinner"></span> : "Sửa"}
+                                </button>
                             </div>
                         </form>
                     </p>
